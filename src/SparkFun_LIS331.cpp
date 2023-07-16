@@ -13,8 +13,10 @@ void LIS331::begin(comm_mode mode)
   setPowerMode(NORMAL);
   axesEnable(true);
   uint8_t data = 0;
-  for (int i = 0x21; i < 0x25; i++) LIS331_write(i,&data,1);
-  for (int i = 0x30; i < 0x37; i++) LIS331_write(i,&data,1);
+  for (int i = 0x21; i < 0x25; i++)
+    LIS331_write(i, &data, 1);
+  for (int i = 0x30; i < 0x37; i++)
+    LIS331_write(i, &data, 1);
 }
 
 void LIS331::setI2CAddr(uint8_t address)
@@ -47,13 +49,13 @@ void LIS331::setPowerMode(power_mode pmode)
   uint8_t data;
   LIS331_read(CTRL_REG1, &data, 1);
 
-  // The power mode is the high three bits of CTRL_REG1. The mode 
-  //  constants are the appropriate bit values left shifted by five, so we 
+  // The power mode is the high three bits of CTRL_REG1. The mode
+  //  constants are the appropriate bit values left shifted by five, so we
   //  need to right shift them to make them work. We also want to mask off the
   //  top three bits to zero, and leave the others untouched, so we *only*
   //  affect the power mode bits.
-  data &= ~0xe0; // Clear the top three bits
-  data |= pmode<<5; // set the top three bits to our pmode value
+  data &= ~0xe0;                     // Clear the top three bits
+  data |= pmode << 5;                // set the top three bits to our pmode value
   LIS331_write(CTRL_REG1, &data, 1); // write the new value to CTRL_REG1
 }
 
@@ -67,8 +69,8 @@ void LIS331::setODR(data_rate drate)
   //  with the appropriate bits in the register. We also want to mask off the
   //  top three and bottom three bits, as those are unrelated to data rate and
   //  we want to only change the data rate.
-  data &=~0x18;     // Clear the two data rate bits
-  data |= drate<<3; // Set the two data rate bits appropriately.
+  data &= ~0x18;                     // Clear the two data rate bits
+  data |= drate << 3;                // Set the two data rate bits appropriately.
   LIS331_write(CTRL_REG1, &data, 1); // write the new value to CTRL_REG1
 }
 
@@ -93,6 +95,33 @@ void LIS331::readAxes(int16_t &x, int16_t &y, int16_t &z)
   z = z >> 4;
 }
 
+void readX(uint16_t x)
+{
+  uint8_t data[2];
+  LIS331_read(OUT_X_L, &data[0], 1);
+  LIS331_read(OUT_X_H, &data[1], 1);
+  x = data[0] | data[1] << 8;
+  x = x >> 4;
+}
+
+void readY(uint16_t y)
+{
+  uint8_t data[2];
+  LIS331_read(OUT_Y_L, &data[0], 1);
+  LIS331_read(OUT_Y_H, &data[1], 1);
+  y = data[0] | data[1] << 8;
+  y = y >> 4;
+}
+
+void readZ(uint16_t z)
+{
+  uint8_t data[2];
+  LIS331_read(OUT_Z_L, &data[0], 1);
+  LIS331_read(OUT_Z_H, &data[1], 1);
+  z = data[0] | data[1] << 8;
+  z = z >> 4;
+}
+
 uint8_t LIS331::readReg(uint8_t reg_address)
 {
   uint8_t data;
@@ -102,7 +131,7 @@ uint8_t LIS331::readReg(uint8_t reg_address)
 
 float LIS331::convertToG(int maxScale, int reading)
 {
-  float result = (float(maxScale) * float(reading))/2047;
+  float result = (float(maxScale) * float(reading)) / 2047;
   return result;
 }
 
@@ -113,7 +142,7 @@ void LIS331::setHighPassCoeff(high_pass_cutoff_freq_cfg hpcoeff)
   //  to the various constants available for this parameter.
   uint8_t data;
   LIS331_read(CTRL_REG2, &data, 1);
-  data &= ~0xfc;  // Clear the two low bits of the CTRL_REG2
+  data &= ~0xfc; // Clear the two low bits of the CTRL_REG2
   data |= hpcoeff;
   LIS331_write(CTRL_REG2, &data, 1);
 }
@@ -125,40 +154,41 @@ void LIS331::enableHPF(bool enable)
   LIS331_read(CTRL_REG2, &data, 1);
   if (enable)
   {
-    data |= 1<<5;
+    data |= 1 << 4;
   }
   else
   {
-    data &= ~(1<<5);
+    data &= ~(1 << 4);
   }
+
   LIS331_write(CTRL_REG2, &data, 1);
 }
 
 void LIS331::HPFOnIntPin(bool enable, uint8_t pin)
 {
-  // Enable the hpf on signal to int pins 
+  // Enable the hpf on signal to int pins
   uint8_t data;
   LIS331_read(CTRL_REG2, &data, 1);
   if (enable)
   {
     if (pin == 1)
     {
-      data |= 1<<3;
+      data |= 1 << 3;
     }
     if (pin == 2)
     {
-      data |= 1<<4;
+      data |= 1 << 4;
     }
   }
   else
   {
     if (pin == 1)
     {
-      data &= ~1<<3;
+      data &= ~1 << 3;
     }
     if (pin == 2)
     {
-      data &= ~1<<4;
+      data &= ~1 << 4;
     }
   }
   LIS331_write(CTRL_REG2, &data, 1);
@@ -172,11 +202,11 @@ void LIS331::intActiveHigh(bool enable)
   // Setting bit 7 makes int pins active low
   if (!enable)
   {
-    data |= 1<<7;
+    data |= 1 << 7;
   }
   else
   {
-    data &= ~(1<<7);
+    data &= ~(1 << 7);
   }
   LIS331_write(CTRL_REG3, &data, 1);
 }
@@ -188,11 +218,11 @@ void LIS331::intPinMode(pp_od _pinMode)
   // Setting bit 6 makes int pins open drain.
   if (_pinMode == OPEN_DRAIN)
   {
-    data |= 1<<6;
+    data |= 1 << 6;
   }
   else
   {
-    data &= ~(1<<6);
+    data &= ~(1 << 6);
   }
   LIS331_write(CTRL_REG3, &data, 1);
 }
@@ -201,29 +231,29 @@ void LIS331::latchInterrupt(bool enable, uint8_t intSource)
 {
   // Latch mode for interrupt. When enabled, you must read the INTx_SRC reg
   //  to clear the interrupt and make way for another.
-  uint8_t data; 
+  uint8_t data;
   LIS331_read(CTRL_REG3, &data, 1);
   // Enable latching by setting the appropriate bit.
   if (enable)
   {
     if (intSource == 1)
     {
-      data |= 1<<2;
+      data |= 1 << 2;
     }
     if (intSource == 2)
     {
-      data |= 1<<5;
+      data |= 1 << 5;
     }
   }
   else
   {
     if (intSource == 1)
     {
-      data &= ~1<<2;
+      data &= ~1 << 2;
     }
     if (intSource == 2)
     {
-      data &= ~1<<5;
+      data &= ~1 << 5;
     }
   }
   LIS331_write(CTRL_REG3, &data, 1);
@@ -232,7 +262,7 @@ void LIS331::latchInterrupt(bool enable, uint8_t intSource)
 void LIS331::intSrcConfig(int_sig_src src, uint8_t pin)
 {
 
-  uint8_t data; 
+  uint8_t data;
   LIS331_read(CTRL_REG3, &data, 1);
   // Enable latching by setting the appropriate bit.
   if (pin == 1)
@@ -243,17 +273,17 @@ void LIS331::intSrcConfig(int_sig_src src, uint8_t pin)
   if (pin == 2)
   {
     data &= ~0xe7; // clear bits 4:3 of the register
-    data |= src<<4;
+    data |= src << 4;
   }
   LIS331_write(CTRL_REG3, &data, 1);
 }
 
 void LIS331::setFullScale(fs_range range)
 {
-  uint8_t data; 
+  uint8_t data;
   LIS331_read(CTRL_REG4, &data, 1);
   data &= ~0xcf;
-  data |= range<<4;
+  data |= range << 4;
   LIS331_write(CTRL_REG4, &data, 1);
 }
 
@@ -261,7 +291,7 @@ bool LIS331::newXData()
 {
   uint8_t data;
   LIS331_read(STATUS_REG, &data, 1);
-  if (data & 1<<0)
+  if (data & 1 << 0)
   {
     return true;
   }
@@ -275,7 +305,7 @@ bool LIS331::newYData()
 {
   uint8_t data;
   LIS331_read(STATUS_REG, &data, 1);
-  if (data & 1<<1)
+  if (data & 1 << 1)
   {
     return true;
   }
@@ -289,7 +319,7 @@ bool LIS331::newZData()
 {
   uint8_t data;
   LIS331_read(STATUS_REG, &data, 1);
-  if (data & 1<<2)
+  if (data & 1 << 2)
   {
     return true;
   }
@@ -300,9 +330,9 @@ bool LIS331::newZData()
 }
 
 void LIS331::enableInterrupt(int_axis axis, trig_on_level trigLevel,
-                     uint8_t interrupt, bool enable)
+                             uint8_t interrupt, bool enable)
 {
-  uint8_t data, reg, mask; 
+  uint8_t data, reg, mask;
   mask = 0;
   if (interrupt == 1)
   {
@@ -315,14 +345,16 @@ void LIS331::enableInterrupt(int_axis axis, trig_on_level trigLevel,
   LIS331_read(reg, &data, 1);
   if (trigLevel == TRIG_ON_HIGH)
   {
-    mask = 1<<1;
+    mask = 1 << 1;
   }
   else
   {
     mask = 1;
   }
-  if (axis == Z_AXIS) mask = mask<<4;
-  if (axis == Y_AXIS) mask = mask<<2;
+  if (axis == Z_AXIS)
+    mask = mask << 4;
+  if (axis == Y_AXIS)
+    mask = mask << 2;
   if (enable)
   {
     data |= mask;
@@ -365,7 +397,7 @@ void LIS331::LIS331_write(uint8_t reg_address, uint8_t *data, uint8_t len)
     // I2C write handling code
     Wire.beginTransmission(address);
     Wire.write(reg_address);
-    for(int i = 0; i<len; i++)
+    for (int i = 0; i < len; i++)
     {
       Wire.write(data[i]);
     }
@@ -376,7 +408,7 @@ void LIS331::LIS331_write(uint8_t reg_address, uint8_t *data, uint8_t len)
     // SPI write handling code
     digitalWrite(CSPin, LOW);
     SPI.transfer(reg_address | 0x40);
-    for (int i=0; i<len; i++)
+    for (int i = 0; i < len; i++)
     {
       SPI.transfer(data[i]);
     }
@@ -393,7 +425,7 @@ void LIS331::LIS331_read(uint8_t reg_address, uint8_t *data, uint8_t len)
     Wire.write(reg_address);
     Wire.endTransmission();
     Wire.requestFrom(address, len);
-    for (int i = 0; i<len; i++)
+    for (int i = 0; i < len; i++)
     {
       data[i] = Wire.read();
     }
@@ -403,11 +435,10 @@ void LIS331::LIS331_read(uint8_t reg_address, uint8_t *data, uint8_t len)
     // SPI read handling code
     digitalWrite(CSPin, LOW);
     SPI.transfer(reg_address | 0xC0);
-    for (int i=0; i<len; i++)
+    for (int i = 0; i < len; i++)
     {
       data[i] = SPI.transfer(0);
     }
     digitalWrite(CSPin, HIGH);
   }
 }
-

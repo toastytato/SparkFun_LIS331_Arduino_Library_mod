@@ -50,6 +50,9 @@ class LIS331
   void setPowerMode(power_mode pmode);
   void setODR(data_rate drate);
   void readAxes(int16_t &x, int16_t &y, int16_t &z);
+  void readX(int16_t &x);
+  void readY(int16_t &y);
+  void readZ(int16_t &z);
   uint8_t readReg(uint8_t reg_address);
   float convertToG(int maxScale, int reading);
   void setHighPassCoeff(high_pass_cutoff_freq_cfg hpcoeff);
