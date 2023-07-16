@@ -95,7 +95,7 @@ void LIS331::readAxes(int16_t &x, int16_t &y, int16_t &z)
   z = z >> 4;
 }
 
-void readX(uint16_t x)
+void LIS331::readX(int16_t &x)
 {
   uint8_t data[2];
   LIS331_read(OUT_X_L, &data[0], 1);
@@ -104,7 +104,7 @@ void readX(uint16_t x)
   x = x >> 4;
 }
 
-void readY(uint16_t y)
+void LIS331::readY(int16_t &y)
 {
   uint8_t data[2];
   LIS331_read(OUT_Y_L, &data[0], 1);
@@ -113,7 +113,7 @@ void readY(uint16_t y)
   y = y >> 4;
 }
 
-void readZ(uint16_t z)
+void LIS331::readZ(int16_t &z)
 {
   uint8_t data[2];
   LIS331_read(OUT_Z_L, &data[0], 1);
